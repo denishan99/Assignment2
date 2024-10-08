@@ -58,7 +58,6 @@
       }
     }
   ],
-
   "layer": [
     {
       "data": {
@@ -70,9 +69,9 @@
     {
       "data": {
         "url": "https://raw.githubusercontent.com/denishan99/Week9HW/refs/heads/main/js/ne_110m%20(2).json",
-        "format": { "type": "topojson", "feature": "ne_110m_graticules_30" }
+        "format": {"type": "topojson", "feature": "ne_110m_graticules_30"}
       },
-      "mark": { "type": "geoshape", "fill": null, "stroke": "lightgray" }
+      "mark": {"type": "geoshape", "fill": null, "stroke": "lightgray"}
     },
     {
       "data": {
@@ -103,7 +102,7 @@
     {
       "data": {
         "url": "https://raw.githubusercontent.com/denishan99/Week9HW/refs/heads/main/world%20food%20production.csv",
-        "format": { "type": "csv" }
+        "format": {"type": "csv"}
       },
       "transform": [
         {
@@ -171,61 +170,102 @@
       }
     },
     {
-      "data": {
-        "url": "https://raw.githubusercontent.com/denishan99/Week9HW/refs/heads/main/world%20food%20production.csv",
-        "format": { "type": "csv" }
-      },
-      "transform": [
+      "layer": [
         {
-          "filter": "datum.Year == Year_selection"
-        },
-        {
-          "calculate": "datum.Entity == 'America' ? 'United States of America' : datum.Entity == 'Central African Republic' ? 'Central African Rep.' : datum.Entity == 'South Sudan' ? 'S. Sudan' : datum.Entity == 'Democratic Republic of Congo' ? 'Dem. Rep. Congo' : datum.Entity",
-          "as": "standardized_name"
-        },
-        {
-          "lookup": "standardized_name", 
-          "from": {
-            "data": {
-              "url": "https://raw.githubusercontent.com/denishan99/Week9HW/refs/heads/main/js/ne_110m%20(2).json",
-              "format": {
-                "type": "topojson",
-                "feature": "ne_110m_admin_0_countries"
+          "data": {
+            "url": "https://raw.githubusercontent.com/denishan99/Week9HW/refs/heads/main/world%20food%20production.csv",
+            "format": {"type": "csv"}
+          },
+          "transform": [
+            {
+              "filter": "datum.Year == Year_selection"
+            },
+            {
+              "calculate": "datum.Entity == 'America' ? 'United States of America' : datum.Entity == 'Central African Republic' ? 'Central African Rep.' : datum.Entity == 'South Sudan' ? 'S. Sudan' : datum.Entity == 'Democratic Republic of Congo' ? 'Dem. Rep. Congo' : datum.Entity",
+              "as": "standardized_name"
+            },
+            {
+              "lookup": "standardized_name",
+              "from": {
+                "data": {
+                  "url": "https://raw.githubusercontent.com/denishan99/Week9HW/refs/heads/main/js/ne_110m%20(2).json",
+                  "format": {
+                    "type": "topojson",
+                    "feature": "ne_110m_admin_0_countries"
+                  }
+                },
+                "key": "properties.NAME"
+              },
+              "as": "geo"
+            },
+            {
+              "calculate": "parseFloat(datum['Total Production (Tonnes)'])",
+              "as": "total_production_num"
+            },
+            {
+              "joinaggregate": [
+                {
+                  "op": "max",
+                  "field": "total_production_num",
+                  "as": "max_production"
+                }
+              ]
+            },
+            {
+              "filter": "datum.total_production_num == datum.max_production"
+            },
+            {
+              "calculate": "datum.standardized_name == 'Argentina' ? {'lat': -38.4161, 'lon': -63.6167} : {'lat': 40.0690, 'lon': 45.0382}",
+              "as": "coordinates"
+            }
+          ],
+          "layer": [
+            {
+              "mark": {
+                "type": "point",
+                "size": 100,
+                "shape": "M0,.5L.6,.8L.5,.1L1,-.3L.3,-.4L0,-1L-.3,-.4L-1,-.3L-.5,.1L-.6,.8L0,.5Z",
+                "color": "Black",
+                "strokeWidth": 2,
+                "stroke": "black",
+                "opacity": 2
+              },
+              "encoding": {
+                "longitude": {"field": "coordinates.lon"},
+                "latitude": {"field": "coordinates.lat"},
+                "tooltip": {"field": "standardized_name"}
               }
             },
-            "key": "properties.NAME"
-          },
-          "as": "geo"
-        },
-        {
-          "window": [{"op": "rank", "as": "ranking"}],
-          "sort": [{"field": "Total Production (Tonnes)", "order": "descending"}]
-        },
-        {
-          "filter": "datum.ranking == 1"
-        },
-        {
-          "calculate": "'*The highest food production in the selected period: ' + datum['Total Production (Tonnes)'] + ' Tonnes.'",
-          "as": "text_annotation_raw"
-        },
-        {
-          "calculate": "split(datum.text_annotation_raw, ';')",
-          "as": "text_annotation"
+            {
+              "mark": {
+                "type": "text",
+                "align": "left",
+                "dx": 10,  
+                "dy": -10, 
+                "fontStyle": "italic",
+                "fontSize": 12,
+                "color": "black"
+              },
+              "encoding": {
+                "longitude": {"field": "coordinates.lon"},
+                "latitude": {"field": "coordinates.lat"},
+                "text": {"value": "Max Food Production Country"}
+              }
+            }
+          ]
         }
-      ],
-      "mark": {
-        "type": "text",
-        "align": "right",
-        "dx": 40,
-        "dy": -100,
-        "baseline": "middle",
-        "fontStyle": "italic",
-        "color": "red" 
-      },
-      "encoding": {
-        "text": {"field": "text_annotation"}
-      }
+      ]
     }
-  ],
-  "config": {}
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+  ]
 }
